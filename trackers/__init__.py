@@ -1,4 +1,7 @@
+import numpy as np
 import torch
+
+
 def track(tracker,args,orig_img,inps,boxes,hm,cropped_boxes,im_name,scores):
     hm = hm.cpu().data.numpy()
     online_targets = tracker.update(orig_img, inps, boxes, hm, cropped_boxes, im_name, scores, _debug=args.debug)

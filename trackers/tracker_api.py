@@ -1,21 +1,13 @@
 # -----------------------------------------------------
 # Copyright (c) Shanghai Jiao Tong University. All rights reserved.
-# 
+#
 # -----------------------------------------------------
 
 """API of tracker"""
 import os
 import sys
 sys.path.insert(0, os.path.dirname(__file__))
-from abc import ABC, abstractmethod
-import platform
-import numpy as np
 from collections import deque
-import itertools
-import os.path as osp
-import time
-import torch
-import torch.nn.functional as F
 import torch.nn as nn
 
 from utils.utils import *
@@ -23,14 +15,11 @@ from utils.log import logger
 from utils.kalman_filter import KalmanFilter
 from tracking.matching import *
 from tracking.basetrack import BaseTrack, TrackState
-from utils.transform import build_transforms
-from ReidModels.ResBnLin import ResModel
-from ReidModels.osnet import *
 from ReidModels.osnet_ain import osnet_ain_x1_0
 from ReidModels.resnet_fc import resnet50_fc512
 
 # np.float removed in Numpy 1.24
-DTYPE_FLOAT = np.float if hasattr(np, "float") else float
+DTYPE_FLOAT = np.float if hasattr(np, "float") else np.float64
 
 class STrack(BaseTrack):
     shared_kalman = KalmanFilter()
@@ -49,15 +38,15 @@ class STrack(BaseTrack):
         self.smooth_feat = None
         self.update_features(temp_feat)
         self.features = deque([], maxlen=buffer_size)
-        self.alpha = 0.9 
+        self.alpha = 0.9
         self.pose = pose
         self.detscore = ps
         self.crop_box = crop_box
         self.file_name = file_name
-    
+
     def update_features(self, feat):
         feat /= np.linalg.norm(feat)
-        self.curr_feat = feat 
+        self.curr_feat = feat
         if self.smooth_feat is None:
             self.smooth_feat = feat
         else:
@@ -204,9 +193,9 @@ class Tracker(object):
             m = resnet50_fc512(num_classes=1,pretrained=False)
         elif self.opt.arch == "osnet_ain":
             m = osnet_ain_x1_0(num_classes=1,pretrained=False)
-        
+
         self.model = nn.DataParallel(m,device_ids=args.gpus).to(args.device).eval()
-        
+
         load_pretrained_weights(self.model,self.opt.loadmodel)
         self.tracked_stracks = []  # type: list[STrack]
         self.lost_stracks = []  # type: list[STrack]
@@ -227,9 +216,9 @@ class Tracker(object):
         lost_stracks = []
         removed_stracks = []
 
-        ''' Step 1: Network forward, get human identity embedding''' 
+        ''' Step 1: Network forward, get human identity embedding'''
         assert len(inps)==len(bboxs),'Unmatched Length Between Inps and Bboxs'
-        assert len(inps)==len(pose),'Unmatched Length Between Inps and Heatmaps'  
+        assert len(inps) == len(pose), 'Unmatched Length Between Inps and Heatmaps'
         with torch.no_grad():
             feats = self.model(inps).cpu().numpy()
         bboxs = np.asarray(bboxs)
@@ -267,7 +256,7 @@ class Tracker(object):
         #Step 3: Second association, with IOU
         detections = [detections[i] for i in u_detection]
         r_tracked_stracks = [strack_pool[i] for i in u_track if strack_pool[i].state==TrackState.Tracked ]
-        dists_iou = iou_distance(r_tracked_stracks, detections) 
+        dists_iou = iou_distance(r_tracked_stracks, detections)
         matches, u_track, u_detection =linear_assignment(dists_iou, thresh=0.5)
 
         for itracked, idet in matches:
@@ -367,5 +356,3 @@ def remove_duplicate_stracks(stracksa, stracksb):
     resa = [t for i,t in enumerate(stracksa) if not i in dupa]
     resb = [t for i,t in enumerate(stracksb) if not i in dupb]
     return resa, resb
-            
-

@@ -1,20 +1,17 @@
-import numpy as np
-from collections import deque
-import itertools
-import os
-import os.path as osp
 import time
-import torch
+from collections import deque
 
-from tracker.utils.utils import *
-from tracker.utils.log import logger
-from tracker.utils.kalman_filter import KalmanFilter
+import numpy as np
+import torch
 from tracker.models import *
 from tracker.tracker import matching
 from tracker.tracker.basetrack import BaseTrack, TrackState
+from tracker.utils.kalman_filter import KalmanFilter
+from tracker.utils.log import logger
+from tracker.utils.utils import *
 
 # np.float removed in Numpy 1.24
-DTYPE_FLOAT = np.float if hasattr(np, "float") else float
+DTYPE_FLOAT = np.float if hasattr(np, "float") else np.float64
 
 class STrack(BaseTrack):
 
@@ -33,7 +30,7 @@ class STrack(BaseTrack):
         self.update_features(temp_feat)
         self.features = deque([], maxlen=buffer_size)
         self.alpha = 0.9
-    
+
     def update_features(self, feat):
         self.curr_feat = feat
         if self.smooth_feat is None:
@@ -41,7 +38,7 @@ class STrack(BaseTrack):
         else:
             self.smooth_feat = self.alpha *self.smooth_feat + (1-self.alpha) * feat
         self.features.append(feat)
-        self.smooth_feat /= np.linalg.norm(self.smooth_feat)  
+        self.smooth_feat /= np.linalg.norm(self.smooth_feat)
 
     def predict(self):
         mean_state = self.mean.copy()
@@ -231,7 +228,7 @@ class JDETracker(object):
         r_tracked_stracks = [strack_pool[i] for i in u_track if strack_pool[i].state==TrackState.Tracked ]
         dists = matching.iou_distance(r_tracked_stracks, detections)
         matches, u_track, u_detection = matching.linear_assignment(dists, thresh=0.5)
-        
+
         for itracked, idet in matches:
             track = r_tracked_stracks[itracked]
             det = detections[idet]
@@ -335,5 +332,3 @@ def remove_duplicate_stracks(stracksa, stracksb):
     resa = [t for i,t in enumerate(stracksa) if not i in dupa]
     resb = [t for i,t in enumerate(stracksb) if not i in dupb]
     return resa, resb
-            
-

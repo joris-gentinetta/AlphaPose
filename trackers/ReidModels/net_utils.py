@@ -1,16 +1,15 @@
-import os
 import collections
+import os
+import pickle
+from copy import deepcopy
+
+import numpy as np
 import torch
 import torch.nn as nn
-from torch.autograd import Variable
-import numpy as np
-from copy import deepcopy
-import pickle
-
 from utils.log import logger
 
 # np.float removed in Numpy 1.24
-DTYPE_FLOAT = np.float if hasattr(np, "float") else float
+DTYPE_FLOAT = np.float if hasattr(np, "float") else np.float64
 
 class ConcatAddTable(nn.Module):
     def __init__(self, *args):
