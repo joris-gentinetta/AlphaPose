@@ -31,8 +31,14 @@ class Tracker(BaseDetector):
         super(Tracker, self).__init__()
 
         self.tracker_opt = opt
-        self.model_cfg = cfg.get('CONFIG', 'detector/tracker/cfg/yolov3.cfg')
-        self.model_weights = cfg.get('WEIGHTS', 'detector/tracker/data/jde.1088x608.uncertainty.pt')
+        self.model_cfg = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            cfg.get('CONFIG', './detector/tracker/cfg/yolov3.cfg')
+        )
+        self.model_weights = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            cfg.get('WEIGHTS', './detector/tracker/data/jde.1088x608.uncertainty.pt')
+        )
         self.img_size = cfg.get('IMG_SIZE', (1088, 608))
         self.nms_thres = cfg.get('NMS_THRES', 0.6)
         self.confidence = cfg.get('CONFIDENCE', 0.05)

@@ -1,15 +1,12 @@
-import cv2
 import numpy as np
 import scipy
-from scipy.spatial.distance import cdist
-from scipy.optimize import linear_sum_assignment
-
 from cython_bbox import bbox_overlaps as bbox_ious
+from scipy.optimize import linear_sum_assignment
+from scipy.spatial.distance import cdist
 from tracker.utils import kalman_filter
-import time
 
 # np.float removed in Numpy 1.24
-DTYPE_FLOAT = np.float if hasattr(np, "float") else float
+DTYPE_FLOAT = np.float if hasattr(np, "float") else np.float64
 
 def merge_matches(m1, m2, shape):
     O,P,Q = shape

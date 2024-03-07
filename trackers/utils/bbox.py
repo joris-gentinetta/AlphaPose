@@ -1,8 +1,8 @@
-import numpy as np
 import cv2
+import numpy as np
 
 # np.float removed in Numpy 1.24
-DTYPE_FLOAT = np.float if hasattr(np, "float") else float
+DTYPE_FLOAT = np.float if hasattr(np, "float") else np.float64
 
 def clip_boxes(boxes, im_shape):
     """

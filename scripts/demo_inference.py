@@ -5,15 +5,11 @@ import platform
 import sys
 import time
 
+import natsort
 import numpy as np
 import torch
 from tqdm import tqdm
-import natsort
 
-from detector.apis import get_detector
-from trackers.tracker_api import Tracker
-from trackers.tracker_cfg import cfg as tcfg
-from trackers import track
 from alphapose.models import builder
 from alphapose.utils.config import update_config
 from alphapose.utils.detector import DetectionLoader
@@ -22,6 +18,10 @@ from alphapose.utils.transforms import flip, flip_heatmap
 from alphapose.utils.vis import getTime
 from alphapose.utils.webcam_detector import WebCamDetectionLoader
 from alphapose.utils.writer import DataWriter
+from detector.apis import get_detector
+from trackers import track
+from trackers.tracker_api import Tracker
+from trackers.tracker_cfg import cfg as tcfg
 
 """----------------------------- Demo options -----------------------------"""
 parser = argparse.ArgumentParser(description='AlphaPose Demo')
@@ -275,9 +275,7 @@ if __name__ == "__main__":
         writer.stop()
         det_loader.stop()
     except Exception as e:
-        print(repr(e))
-        print('An error as above occurs when processing the images, please check it')
-        pass
+        raise Exception('An error as above occurs when processing the images, please check it') from e
     except KeyboardInterrupt:
         print_finish_info()
         # Thread won't be killed when press Ctrl+C
