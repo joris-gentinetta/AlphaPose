@@ -1,11 +1,12 @@
 import numpy as np
 import torch
 
-from . import nms_cpu, nms_cuda
+# from . import nms_cpu, nms_cuda
 from .soft_nms_cpu import soft_nms_cpu
 
 
 def nms(dets, iou_thr, device_id=None):
+    return soft_nms(dets, iou_thr)
     """Dispatch to either CPU or GPU NMS implementations.
 
     The input can be either a torch tensor or numpy array. GPU NMS will be used
